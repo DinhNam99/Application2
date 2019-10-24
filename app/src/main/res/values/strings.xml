@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Application</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="thich">Thích</string>
+    <string name="luotthich">Lượt thích</string>
+    <string name="traloi">Trả lời</string>
+    <string name="user">User</string>
+    <string name="vuaxong">Vừa xong</string>
+    <string name="thoigian">Thời gian</string>
+    <string name="testdangbai">Thử đăng bài lên app</string>
+</resources>
