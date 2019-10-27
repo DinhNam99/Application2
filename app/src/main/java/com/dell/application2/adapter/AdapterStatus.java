@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -35,11 +36,14 @@ import butterknife.BindViews;
 import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class AdapterStatus extends RecyclerView.Adapter<AdapterStatus.StatusHolder> {
+public class AdapterStatus extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     ArrayList<Status> statusList;
     Context context;
     LayoutInflater inflater;
+    private final int VIEW_TYPE_ITEM = 0;
+    private final int VIEW_TYPE_LOADING = 1;
+
     public AdapterStatus(Context context, ArrayList<Status> statusList){
         this.context = context;
         this.statusList = statusList;
@@ -48,69 +52,38 @@ public class AdapterStatus extends RecyclerView.Adapter<AdapterStatus.StatusHold
 
     @NonNull
     @Override
-    public StatusHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = inflater.inflate(R.layout.layout_item, parent, false);
-        return new StatusHolder(view);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if(viewType == VIEW_TYPE_ITEM) {
+            View view = inflater.inflate(R.layout.layout_item, parent, false);
+            return new StatusHolder(view);
+        }else {
+            View view = inflater.inflate(R.layout.layout_item_loading,parent,false);
+            return new LoadingViewHolder(view);
+        }
     }
 
     @SuppressLint("ResourceType")
     @Override
-    public void onBindViewHolder(@NonNull StatusHolder holder, int position) {
-        Status status = statusList.get(position);
-        holder.profileImage.setImageResource(R.drawable.ic_account_circle_black_24dp);
-        holder.listTextView1.get(0).setText(status.getUser().getName());
-        holder.listTextView1.get(1).setText(status.getTime().toString());
-        holder.listTextView1.get(2).setText(status.getTextStatus());
-        setImage(holder,status);
-        holder.likeComment.get(0).setText(status.getNumLike()+" Lượt thích");
-        holder.likeComment.get(1).setText(status.getNumComment()+" Trả lời");
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int position) {
+        if(viewHolder instanceof StatusHolder) {
+            StatusHolder statusHolder = (StatusHolder) viewHolder;
+            showStatusView(statusHolder,position);
 
-        if(status.isActiveLike()){
-            holder.likeComment.get(2).setTextColor(context.getResources().getColor(R.color.colorPrimary));
-            holder.like.setImageResource(R.drawable.like);
-        }else{
-            holder.likeComment.get(2).setTextColor(context.getResources().getColor(android.R.color.black));
-            holder.like.setImageResource(R.drawable.unlike);
+        }else if(viewHolder instanceof LoadingViewHolder){
+            LoadingViewHolder loadingViewHolder = (LoadingViewHolder) viewHolder;
+            showLoadingView(loadingViewHolder,position);
         }
-
-        //like
-        holder.layoutLikeCommment.get(0).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(status.isActiveLike()){
-                    EventBus.getDefault().post(new EventLike(-1,position,false));
-                    notifyDataSetChanged();
-
-                }else{
-                    EventBus.getDefault().post(new EventLike(1,position,true));
-                    notifyDataSetChanged();
-                }
-            }
-        });
-        holder.layoutLikeCommment.get(1).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle("Comment");
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        EventBus.getDefault().post(new EventComment(1,position));
-                    }
-                });
-                AlertDialog alert1 = builder.create();
-                alert1.show();
-            }
-        });
-
-        setClickLayoutImage(holder,status,position);
     }
 
     @Override
     public int getItemCount() {
-        return statusList.size();
+        return statusList == null ? 0 : statusList.size();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        return statusList.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
+    }
 
     public void setImage(StatusHolder holder, Status status){
         List<Image> image = status.getImageStatus();
@@ -185,5 +158,70 @@ public class AdapterStatus extends RecyclerView.Adapter<AdapterStatus.StatusHold
             super(itemView);
             ButterKnife.bind(this,itemView);
         }
+    }
+
+    public class LoadingViewHolder extends RecyclerView.ViewHolder {
+
+        @BindView(R.id.progressbar)
+        ProgressBar progressBar;
+        public LoadingViewHolder(@NonNull View itemView) {
+            super(itemView);
+            ButterKnife.bind(this,itemView);
+        }
+    }
+
+    private void showStatusView(StatusHolder holder, int position){
+        Status status = statusList.get(position);
+        holder.profileImage.setImageResource(R.drawable.ic_account_circle_black_24dp);
+        holder.listTextView1.get(0).setText(status.getUser().getName());
+        holder.listTextView1.get(1).setText(status.getTime().toString());
+        holder.listTextView1.get(2).setText(status.getTextStatus());
+        setImage(holder, status);
+        holder.likeComment.get(0).setText(status.getNumLike() + " Lượt thích");
+        holder.likeComment.get(1).setText(status.getNumComment() + " Trả lời");
+
+        if (status.isActiveLike()) {
+            holder.likeComment.get(2).setTextColor(context.getResources().getColor(R.color.colorPrimary));
+            holder.like.setImageResource(R.drawable.like);
+        } else {
+            holder.likeComment.get(2).setTextColor(context.getResources().getColor(android.R.color.black));
+            holder.like.setImageResource(R.drawable.unlike);
+        }
+
+        //like
+        holder.layoutLikeCommment.get(0).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (status.isActiveLike()) {
+                    EventBus.getDefault().post(new EventLike(-1, position, false));
+                    notifyDataSetChanged();
+
+                } else {
+                    EventBus.getDefault().post(new EventLike(1, position, true));
+                    notifyDataSetChanged();
+                }
+            }
+        });
+        holder.layoutLikeCommment.get(1).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle("Comment");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        EventBus.getDefault().post(new EventComment(1, position));
+                    }
+                });
+                AlertDialog alert1 = builder.create();
+                alert1.show();
+            }
+        });
+
+        setClickLayoutImage(holder, status, position);
+    }
+
+    private void showLoadingView(LoadingViewHolder holder, int position){
+        holder.progressBar.setIndeterminate(true);
     }
 }

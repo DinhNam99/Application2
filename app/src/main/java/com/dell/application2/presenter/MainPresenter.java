@@ -1,5 +1,8 @@
 package com.dell.application2.presenter;
 
+import android.os.Handler;
+
+import com.dell.application2.adapter.AdapterStatus;
 import com.dell.application2.model.Image;
 import com.dell.application2.model.Status;
 import com.dell.application2.model.User;
@@ -46,7 +49,8 @@ public class MainPresenter implements PresenterInteface {
         statusList.add(new Status(new User(null,"C"),"Toi la C", list3,26,35,true,new Date()));
         statusList.add(new Status(new User(null,"D"),"Toi la D",list4,21,53,true,new Date()));
         statusList.add(new Status(new User(null,"E"),"Toi la E", list5,42,43,false,new Date()));
-
         mainView.loadData(statusList);
     }
+
+
 }

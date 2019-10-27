@@ -31,16 +31,8 @@ public class Status implements Serializable {
         return user;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     public String getTextStatus() {
         return textStatus;
-    }
-
-    public void setTextStatus(String textStatus) {
-        this.textStatus = textStatus;
     }
 
     public List<Image> getImageStatus() {
@@ -75,7 +67,4 @@ public class Status implements Serializable {
         return time;
     }
 
-    public void setTime(Date time) {
-        this.time = time;
-    }
 }
